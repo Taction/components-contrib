@@ -312,6 +312,7 @@ func TestVaultValueType(t *testing.T) {
 	t.Run("valid vault value type map", func(t *testing.T) {
 		properties := map[string]string{
 			componentVaultToken: expectedTok,
+			componentSkipVerify: "true",
 			vaultValueType:      "map",
 		}
 
@@ -332,6 +333,7 @@ func TestVaultValueType(t *testing.T) {
 	t.Run("valid vault value type text", func(t *testing.T) {
 		properties := map[string]string{
 			componentVaultToken: expectedTok,
+			componentSkipVerify: "true",
 			vaultValueType:      "text",
 		}
 
@@ -352,6 +354,7 @@ func TestVaultValueType(t *testing.T) {
 	t.Run("empty vault value type", func(t *testing.T) {
 		properties := map[string]string{
 			componentVaultToken: expectedTok,
+			componentSkipVerify: "true",
 		}
 
 		m := secretstores.Metadata{
@@ -371,6 +374,7 @@ func TestVaultValueType(t *testing.T) {
 	t.Run("invalid vault value type", func(t *testing.T) {
 		properties := map[string]string{
 			componentVaultToken: expectedTok,
+			componentSkipVerify: "true",
 			vaultValueType:      "incorrect",
 		}
 
