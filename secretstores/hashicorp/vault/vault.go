@@ -44,12 +44,22 @@ const (
 	vaultHTTPHeader              string = "X-Vault-Token"
 	vaultHTTPRequestHeader       string = "X-Vault-Request"
 	vaultEnginePath              string = "enginePath"
-	parseAsMap                   string = "parseAsMap"
+	vaultValueType               string = "vaultValueType"
 	versionID                    string = "version_id"
 
-	DataStr  string = "data"
-	FalseStr string = "false"
+	DataStr string = "data"
 )
+
+type valueType string
+
+const (
+	valueTypeMap  valueType = "map"
+	valueTypeText valueType = "text"
+)
+
+func (v valueType) isMapType() bool {
+	return v == valueTypeMap
+}
 
 // vaultSecretStore is a secret store implementation for HashiCorp Vault
 type vaultSecretStore struct {
@@ -59,7 +69,7 @@ type vaultSecretStore struct {
 	vaultTokenMountPath string
 	vaultKVPrefix       string
 	vaultEnginePath     string
-	parseAsMap          bool
+	vaultValueType      valueType
 
 	json jsoniter.API
 
@@ -115,9 +125,15 @@ func (v *vaultSecretStore) Init(metadata secretstores.Metadata) error {
 		v.vaultEnginePath = val
 	}
 
-	v.parseAsMap = true
-	if val, ok := props[parseAsMap]; ok && strings.EqualFold(val, FalseStr) {
-		v.parseAsMap = false
+	v.vaultValueType = valueTypeMap
+	if val, found := props[vaultValueType]; found && val != "" {
+		switch valueType(val) {
+		case valueTypeMap:
+		case valueTypeText:
+			v.vaultValueType = valueTypeText
+		default:
+			return fmt.Errorf("vault init error, invalid value type %s, accepted values are map or text", val)
+		}
 	}
 
 	v.vaultToken = props[componentVaultToken]
@@ -220,7 +236,7 @@ func (v *vaultSecretStore) getSecret(secret, version string) (*vaultKVResponse, 
 
 	var d vaultKVResponse
 
-	if v.parseAsMap {
+	if v.vaultValueType.isMapType() {
 		// parse the secret value to map[string]string
 		if err := json.NewDecoder(httpresp.Body).Decode(&d); err != nil {
 			return nil, fmt.Errorf("couldn't decode response body: %s", err)

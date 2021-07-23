@@ -308,6 +308,86 @@ func TestDefaultVaultAddress(t *testing.T) {
 	})
 }
 
+func TestVaultValueType(t *testing.T) {
+	t.Run("valid vault value type map", func(t *testing.T) {
+		properties := map[string]string{
+			componentVaultToken: expectedTok,
+			vaultValueType:      "map",
+		}
+
+		m := secretstores.Metadata{
+			Properties: properties,
+		}
+
+		target := &vaultSecretStore{
+			client: nil,
+			logger: nil,
+		}
+
+		err := target.Init(m)
+		assert.Nil(t, err)
+		assert.True(t, target.vaultValueType.isMapType())
+	})
+
+	t.Run("valid vault value type text", func(t *testing.T) {
+		properties := map[string]string{
+			componentVaultToken: expectedTok,
+			vaultValueType:      "text",
+		}
+
+		m := secretstores.Metadata{
+			Properties: properties,
+		}
+
+		target := &vaultSecretStore{
+			client: nil,
+			logger: nil,
+		}
+
+		err := target.Init(m)
+		assert.Nil(t, err)
+		assert.False(t, target.vaultValueType.isMapType())
+	})
+
+	t.Run("empty vault value type", func(t *testing.T) {
+		properties := map[string]string{
+			componentVaultToken: expectedTok,
+		}
+
+		m := secretstores.Metadata{
+			Properties: properties,
+		}
+
+		target := &vaultSecretStore{
+			client: nil,
+			logger: nil,
+		}
+
+		err := target.Init(m)
+		assert.Nil(t, err)
+		assert.True(t, target.vaultValueType.isMapType())
+	})
+
+	t.Run("invalid vault value type", func(t *testing.T) {
+		properties := map[string]string{
+			componentVaultToken: expectedTok,
+			vaultValueType:      "incorrect",
+		}
+
+		m := secretstores.Metadata{
+			Properties: properties,
+		}
+
+		target := &vaultSecretStore{
+			client: nil,
+			logger: nil,
+		}
+
+		err := target.Init(m)
+		assert.Error(t, err, "vault init error, invalid value type incorrect, accepted values are map or text")
+	})
+}
+
 func getCertificate() []byte {
 	certificateBytes, _ := base64.StdEncoding.DecodeString(certificate)
 
